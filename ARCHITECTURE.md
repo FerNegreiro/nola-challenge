@@ -1,68 +1,90 @@
-🚀 Decisões de Arquitetura: NOLA Analytics
+Documentação de Decisões Arquiteturais
 
-Este documento descreve a arquitetura escolhida para a plataforma de analytics "NOLA", resolvendo o desafio de fornecer uma ferramenta "Power BI para Restaurantes".
+Projeto: NOLA Analytics (God Level Challenge)
 
 1. O Problema Central: OLTP vs. OLAP
 
-O banco de dados de um restaurante (o schema PostgreSQL fornecido) é um sistema OLTP (Online Transaction Processing). Ele é otimizado para escritas rápidas: registrar um pedido, cadastrar um cliente, fechar uma conta.
+O database-schema.sql fornecido é um banco de dados transacional (OLTP) de 3ª Forma Normal. Ele é otimizado para ESCRITAS rápidas (registrar uma venda, um item, um pagamento).
 
-As perguntas da Maria são OLAP (Online Analytical Processing). Elas são otimizadas para leituras complexas: agregar milhões de linhas, comparar períodos, calcular médias.
+As perguntas da Maria (PROBLEMA.md) são analíticas (OLAP). Elas exigem LEITURAS complexas e agregações em múltiplas tabelas (sales, product_sales, item_product_sales, delivery_addresses, channels).
 
-Decisão Principal: Nunca rodaremos queries OLAP diretamente no banco OLTP. Isso causaria lentidão na operação do restaurante e as análises seriam lentas.
+Decisão Arquitetural Primária:
+Nós NÃO iremos rodar as queries analíticas do frontend diretamente no banco OLTP.
 
-Nossa Solução: Vamos criar um Data Warehouse (DW) simples. Para este desafio, será um schema separado (analytics) dentro do mesmo PostgreSQL, contendo tabelas pré-agregadas.
+Viola o requisito de Performance: Queries com JOINs em 5 tabelas e agregações em 500k+ linhas serão lentas (> 2s).
 
-2. A Stack Escolhida (A Trindade de Dados)
+Risco Operacional: Queries analíticas pesadas podem causar locks e degradar a performance da operação do restaurante (o próprio ato de vender).
 
-Escolhemos uma stack moderna, flexível e de alta performance, dividida em 3 camadas:
+Solução: Implementaremos um Data Warehouse (DW). Para este desafio, usaremos um schema analytics dentro do mesmo PostgreSQL. Este schema conterá Data Marts (tabelas "achatadas" e pré-agregadas), otimizadas para leitura instantânea.
 
-Camada 1: Data Transformation (O Cozinheiro)
+2. A Stack de 3 Camadas
+
+Para executar essa estratégia, escolho uma arquitetura de 3 camadas:
+
+Camada 1: Transformação (O "ETL" / Data Mart)
 
 Tecnologia: dbt (Data Build Tool)
 
-Por quê? O dbt é a melhor ferramenta do mercado para transformar dados "crus" (OLTP) em "marts" analíticos limpos (OLAP) usando apenas SQL.
+Por quê? É a ferramenta padrão do mercado para o "T" em ELT (Extract, Load, Transform). O dbt nos permite construir nossos Data Marts usando apenas SQL, de forma testável, documentada e idempotente. Ele é o "cozinheiro" que prepara os dados antes de servi-los.
 
-O que ele faz: Ele irá rodar de tempos em tempos (ex: a cada 30 minutos) e atualizar nossas tabelas analíticas. Ele será responsável por criar o mart_customer_rfm (Recency, Frequency, Monetary) e o mart_hourly_sales, que respondem diretamente às perguntas da Maria.
+Alternativa Recusada: Scripts Python puros. Seriam mais difíceis de manter, testar e documentar do que o dbt, que é feito para isso.
 
-Camada 2: Backend API (O Garçom)
+Camada 2: Backend API (O "Garçom")
 
 Tecnologia: Python (FastAPI)
 
-Por quê? É incrivelmente rápido, leve e perfeito para servir dados. O frontend irá pedir: "Me dê os dados do gráfico de vendas por hora", e o FastAPI irá buscar esses dados já prontos no nosso Data Warehouse.
+Por quê?
 
-O que ele faz: Expõe endpoints como /api/v1/query. Ele recebe um JSON do frontend (ex: { "metric": "total_sales", "dimension": "product_name", ... }) e constrói uma query SQL simples e segura contra os marts do dbt.
+Performance: É um dos frameworks mais rápidos disponíveis, ideal para I/O (servir dados).
 
-Camada 3: Frontend (O Salão do Restaurante)
+Ecossistema de Dados: Sendo Python, ele se integra nativamente com dbt (o dbt-core pode ser chamado via Python) e outras libs de dados (pandas, polars) se necessário.
+
+Facilidade: A validação de dados com Pydantic é simples e robusta.
+
+Alternativa Recusada: Node.js (Express/Nest). Seria rápido, mas a integração com o dbt e o ecossistema de dados é menos natural que no Python.
+
+Camada 3: Frontend (O "Salão" da Maria)
 
 Tecnologia: React (com TypeScript)
 
-Por quê? É a biblioteca líder para criar interfaces de usuário ricas e interativas.
+Por quê?
 
-O que ele faz: Esta é a interface "No-Code" onde a Maria realmente trabalha.
+Ecossistema: Para construir uma UI de "pivot table" e dashboards "drag-and-drop", precisamos de bibliotecas maduras. Usaremos Recharts (gráficos) e react-grid-layout (dashboards).
 
-Gráficos: Usaremos Chart.js ou Recharts para visualizações.
+UX Interativa: É a especialidade do React.
 
-Dashboard: Usaremos react-grid-layout para permitir que ela arraste, solte e redimensione widgets.
+Tipagem: TypeScript é essencial para um projeto de dados, garantindo que os contratos entre o backend (FastAPI) e o frontend sejam mantidos.
 
-Estado: Usaremos Zustand ou React Context para gerenciar o estado global (como filtros de data).
+Alternativa Recusada: Vue.js. Tão capaz quanto React, mas o ecossistema de bibliotecas de BI/dashboard é ligeiramente menor. A escolha aqui é por preferência de ecossistema.
 
-3. Resolvendo as Perguntas da Maria (Na Prática)
+3. Como a Arquitetura Resolve as Dores da Maria
 
-| Pergunta da Maria | Solução com a Arquitetura NOLA |
-| "Qual produto vende mais na quinta à noite no iFood?" | dbt cria o mart mart_hourly_product_sales. O React permite que Maria filtre por dia=Quinta, canal=iFood e hora=19-23h. O FastAPI serve os dados deste mart. A query é instantânea. |
-| "Meu tempo de entrega piorou. Em quais regiões?" | dbt cria o mart mart_daily_delivery_performance. O React mostra um gráfico de linha com avg_delivery_time por region, com comparação de períodos. A query é instantânea. |
-| "Quais clientes compraram 3+ vezes mas não voltam há 30 dias?" | dbt cria o mart mart_customer_rfm. O React tem um card "Clientes em Risco" que é apenas um SELECT COUNT(*) deste mart. Clicar nele mostra a lista de clientes. A query é instantânea. |
+O dbt (Camada 1) irá criar os Data Marts específicos para as perguntas da Maria. O FastAPI (Camada 2) irá apenas ler deles.
 
-4. Próximos Passos (MVP)
+Pergunta da Maria (A Dor)
 
-Para entregar uma solução funcional rapidamente, vamos construir um protótipo de alta fidelidade em um único arquivo index.html.
+Data Mart (Modelo dbt no schema analytics)
 
-Este protótipo irá simular essa arquitetura completa:
+Query do Backend (Rápida)
 
-O JavaScript irá gerar dados mockados (simulando o banco OLTP).
+"Qual produto vende mais na quinta à noite no iFood?"
 
-Funções JavaScript irão processar esses dados (simulando o dbt e o FastAPI).
+mart_product_performance_hourly (Tabela pré-agregada por product_id, channel_id, dia_semana, hora)
 
-O HTML/Tailwind e Chart.js irão renderizar a interface (simulando o React).
+SELECT * FROM analytics.mart_product_performance_hourly WHERE dia_semana = 4 AND hora BETWEEN 19 AND 23 AND channel_name = 'iFood' ORDER BY total_vendido DESC
 
-Isso nos permite validar a UX e a lógica de negócios de forma extremamente rápida.
+"Meu tempo de entrega piorou. Em quais regiões?"
+
+mart_delivery_performance_daily (Tabela pré-agregada por bairro, cidade, data)
+
+SELECT bairro, AVG(avg_delivery_minutes) FROM analytics.mart_delivery_performance_daily GROUP BY 1 ORDER BY 2 DESC
+
+"Quais clientes compraram 3+ vezes mas não voltam há 30 dias?"
+
+mart_customer_rfm (Tabela com Recência, Frequência, Valor por customer_id)
+
+SELECT * FROM analytics.mart_customer_rfm WHERE frequencia >= 3 AND dias_desde_ultima_compra > 30
+
+Conclusão: Esta arquitetura move a complexidade (os JOINs e GROUP BYs pesados) da "hora da consulta" (runtime) para a "hora da transformação" (batch, via dbt).
+
+Quando Maria filtra o dashboard, ela não está consultando o banco OLTP. Ela está consultando um Data Mart leve e pré-processado. Isso garante a performance < 1s.
