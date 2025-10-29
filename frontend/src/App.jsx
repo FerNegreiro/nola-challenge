@@ -187,7 +187,7 @@ function App() {
               <select
                 id="metric"
                 name="metric"
-                aria-label="Seleção de Métrica"
+                aria-label="Seleção Principal" 
                 className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
                 value={metric}
                 onChange={(e) => setMetric(e.target.value)}
@@ -202,7 +202,7 @@ function App() {
               <select
                 id="dimension"
                 name="dimension"
-                aria-label="Seleção de Dimensão"
+                aria-label="Seleção Secundária"
                 className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
                 value={dimension}
                 onChange={(e) => setDimension(e.target.value)}
@@ -219,7 +219,7 @@ function App() {
               <select
                 id="channel"
                 name="channel"
-                aria-label="Seleção de Canal"
+                aria-label="Seleção de Filtro de Canal"
                 className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
                 value={channel}
                 onChange={(e) => setChannel(e.target.value)}
