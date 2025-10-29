@@ -4,11 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NOLA Analytics - Dashboard</title>
-    <!-- 1. Carrega o Tailwind CSS para um design limpo -->
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 2. Carrega o Chart.js para os gráficos -->
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- 3. Carrega a biblioteca de datas (para facilitar a manipulação) -->
+    
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/weekday.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/isoWeek.js"></script>
@@ -28,7 +28,7 @@
 </head>
 <body class="bg-gray-100 font-sans">
 
-    <!-- Cabeçalho -->
+    
     <header class="bg-white shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-gray-900">
@@ -36,7 +36,7 @@
             </h1>
             <div class="flex items-center space-x-4">
                 <span class="text-sm text-gray-700 hidden sm:block">Olá, <span class="font-medium">Maria</span></span>
-                <!-- Seletor de Data (Controlador Principal) -->
+                
                 <div>
                     <label for="date-range" class="sr-only">Período</label>
                     <select id="date-range" name="date-range" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
@@ -50,10 +50,10 @@
         </div>
     </header>
 
-    <!-- Área Principal do Dashboard -->
+    
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         
-        <!-- Cards de KPIs (Resumo) -->
+        
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div class="bg-white p-6 rounded-lg shadow-sm">
                 <h3 class="text-sm font-medium text-gray-500">Vendas Totais</h3>
@@ -69,29 +69,29 @@
             </div>
         </div>
 
-        <!-- Construtor de Análise (A "Pivot Table" da Maria) -->
+        
         <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
             <h2 class="text-lg font-medium text-gray-900 mb-4">Análise Customizada</h2>
             <p class="text-sm text-gray-600 mb-4">Responda suas perguntas. Comece selecionando uma métrica e uma dimensão para explorar.</p>
             
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <!-- Filtros -->
+                
                 <select id="filter-metric" class="rounded-md border-gray-300 shadow-sm">
-                    <option value="total_sales">Métrica: Vendas Totais</option>
-                    <option value="total_orders">Métrica: Total de Pedidos</option>
+                    <option value="total_sales">Vendas Totais</option>
+                    <option value="total_orders">Total de Pedidos</option>
                 </select>
                 
                 <select id="filter-dimension" class="rounded-md border-gray-300 shadow-sm">
-                    <option value="channel">Dimensão: Canal (iFood, Rappi...)</option>
-                    <option value="product_name">Dimensão: Produto</option>
-                    <option value="region">Dimensão: Região de Entrega</option>
-                    <option value="day_of_week">Dimensão: Dia da Semana</option>
-                    <option value="hour_of_day">Dimensão: Hora do Dia</option>
+                    <option value="channel">Canal (iFood, Rappi...)</option>
+                    <option value="product_name">Produto</option>
+                    <option value="region">Região de Entrega</option>
+                    <option value="day_of_week">Dia da Semana</option>
+                    <option value="hour_of_day">Hora do Dia</option>
                 </select>
 
-                <!-- Filtros adicionais -->
+                
                 <select id="filter-channel" class="rounded-md border-gray-300 shadow-sm">
-                    <option value="all">Canal: Todos</option>
+                    <option value="all">Todos</option>
                     <option value="iFood">iFood</option>
                     <option value="Rappi">Rappi</option>
                     <option value="WhatsApp">WhatsApp</option>
@@ -104,15 +104,15 @@
             </div>
         </div>
 
-        <!-- Área de Gráficos -->
+        
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Gráfico 1: Análise Customizada -->
+            
             <div class="bg-white p-6 rounded-lg shadow-sm">
                 <h3 id="chart1-title" class="text-lg font-medium text-gray-900 mb-4">Sua Análise</h3>
                 <canvas id="chart1"></canvas>
             </div>
 
-            <!-- Gráfico 2: Desempenho de Entregas (Pergunta 2) -->
+            
             <div class="bg-white p-6 rounded-lg shadow-sm">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Tempo Médio de Entrega (min) por Região</h3>
                 <canvas id="chart2"></canvas>
@@ -122,9 +122,9 @@
     </main>
 
     <script>
-        // --- INÍCIO DO BACKEND/DB SIMULADO ---
-        // Nesta seção, simulamos o Banco de Dados, o dbt e o FastAPI.
-        // No mundo real, isso rodaria no servidor.
+        
+        
+        
 
         let RAW_DATA = [];
         let ANALYTICS_DATA = {};
@@ -145,19 +145,19 @@
             customer_ids: Array.from({ length: 500 }, (_, i) => `customer_${i + 1}`),
         };
 
-        // Função para gerar um número aleatório
+        
         function rand(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        // Função para gerar um pedido aleatório (Simula o `generate_data.py`)
+        
         function createMockOrder(date) {
             const customer_id = MOCK_CONFIG.customer_ids[rand(0, 499)];
             const channel = MOCK_CONFIG.channels[rand(0, 3)];
             const product = MOCK_CONFIG.products[rand(0, 4)];
             const region = MOCK_CONFIG.regions[rand(0, 3)];
             
-            // Simula horários de pico (noite)
+            
             const hour = rand(10, 23);
             const created_at = date.hour(hour).minute(rand(0, 59)).second(rand(0, 59));
             
@@ -173,13 +173,13 @@
                 total_sales: product.price,
                 region: region,
                 delivery_time_min: delivery_time_min,
-                day_of_week: created_at.weekday(), // 0 = Domingo, 1 = Segunda... 4 = Quinta
+                day_of_week: created_at.weekday(), 
                 hour_of_day: hour,
             };
         }
 
-        // 1. SIMULAÇÃO DO BANCO DE DADOS (OLTP)
-        // Gera 5.000 vendas (suficiente para o browser) nos últimos 180 dias
+        
+        
         console.log("Simulando banco de dados... Gerando 5.000 vendas...");
         RAW_DATA = Array.from({ length: 5000 }, () => {
             const randomDayAgo = rand(0, 180);
@@ -189,23 +189,23 @@
         console.log("Banco de dados simulado com", RAW_DATA.length, "registros.");
 
         
-        // 2. SIMULAÇÃO DO ETL (dbt)
-        // Processa os dados brutos e cria "Data Marts" pré-agregados
-        // Esta é a parte mais importante para a performance.
+        
+        
+        
         
         function runETL(data, daysAgo) {
             console.log(`Rodando ETL (simulação dbt) para ${daysAgo} dias...`);
             
-            // Filtra os dados brutos pelo período selecionado
+            
             const startDate = TODAY.subtract(daysAgo, 'day').startOf('day');
             const filteredData = data.filter(d => dayjs(d.created_at).isAfter(startDate));
             console.log(`Dados filtrados: ${filteredData.length} registros.`);
 
-            // --- Mart 1: Perguntas Customizadas (Agregador Genérico) ---
-            // Não vamos pré-agregar tudo, mas filtramos o dataset
+            
+            
             const customAnalysisData = filteredData;
 
-            // --- Mart 2: Performance de Entrega (Pergunta 2) ---
+            
             const deliveryByRegion = {};
             filteredData.forEach(d => {
                 if (d.delivery_time_min) {
@@ -222,8 +222,8 @@
             })).sort((a, b) => b.avg_delivery_time - a.avg_delivery_time);
 
 
-            // --- Mart 3: Clientes RFM (Pergunta 3) ---
-            // Usamos os dados *completos* (não filtrados) para RFM
+            
+            
             const customerData = {};
             data.forEach(d => {
                 if (!customerData[d.customer_id]) {
@@ -241,13 +241,13 @@
                 const customer = customerData[customerId];
                 const days_since_last_order = TODAY.diff(customer.last_order_date, 'day');
                 
-                // "Quais clientes compraram 3+ vezes mas não voltam há 30 dias?"
+                
                 if (customer.total_orders >= 3 && days_since_last_order > 30) {
                     riskyCustomersCount++;
                 }
             });
 
-            // KPIs
+            
             const kpi_total_sales = filteredData.reduce((sum, d) => sum + d.total_sales, 0);
             const kpi_total_orders = filteredData.length;
 
@@ -261,16 +261,16 @@
         }
 
 
-        // 3. SIMULAÇÃO DA API (FastAPI)
-        // Funções que o frontend chama para "buscar" os dados.
+        
+        
 
-        // API Endpoint: /api/v1/kpis-and-charts
+        
         function fetchData(daysAgo) {
             ANALYTICS_DATA = runETL(RAW_DATA, daysAgo);
             updateDashboard();
         }
 
-        // API Endpoint: /api/v1/custom-query
+        
         function runCustomQuery() {
             const metric = document.getElementById('filter-metric').value;
             const dimension = document.getElementById('filter-dimension').value;
@@ -278,23 +278,23 @@
 
             console.log(`Rodando query customizada: ${metric} por ${dimension}, filtro: ${channelFilter}`);
 
-            // 1. Aplicar filtros
+            
             let data = ANALYTICS_DATA.customAnalysisData;
             if (channelFilter !== 'all') {
                 data = data.filter(d => d.channel === channelFilter);
             }
             
-            // 2. Responder à Pergunta 1
-            // "Qual produto vende mais na quinta à noite no iFood?"
-            // Para testar: Métrica=Vendas, Dimensão=Produto, Canal=iFood
-            // E adicionar filtros de dia/hora (aqui simplificado)
+            
+            
+            
+            
             if (channelFilter === 'iFood' && dimension === 'product_name') {
-                 // Filtra para "Quinta à noite" (dia 4, hora 19-23)
+                 
                  data = data.filter(d => d.day_of_week === 4 && d.hour_of_day >= 19);
                  console.log("Aplicando filtro especial 'Quinta à noite no iFood'");
             }
 
-            // 3. Agregar dados (GROUP BY)
+            
             const aggregation = {};
             data.forEach(d => {
                 const dimValue = d[dimension];
@@ -305,13 +305,13 @@
                 aggregation[dimValue].total_orders++;
             });
 
-            // 4. Formatar para o gráfico
+            
             const sortedData = Object.keys(aggregation).map(dimValue => ({
                 dimension: dimValue,
                 metric_value: aggregation[dimValue][metric],
-            })).sort((a, b) => b.metric_value - a.metric_value).slice(0, 10); // Top 10
+            })).sort((a, b) => b.metric_value - a.metric_value).slice(0, 10); 
 
-            // Nomes amigáveis para dias da semana
+            
             const dayMap = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
             if (dimension === 'day_of_week') {
                 sortedData.forEach(d => d.dimension = dayMap[d.dimension] || "N/A");
@@ -320,7 +320,7 @@
                 sortedData.forEach(d => d.dimension = `${d.dimension}h`);
             }
 
-            // 5. Renderizar o gráfico
+            
             const chartTitle = `${document.getElementById('filter-metric').options[document.getElementById('filter-metric').selectedIndex].text} por ${document.getElementById('filter-dimension').options[document.getElementById('filter-dimension').selectedIndex].text}`;
             document.getElementById('chart1-title').innerText = chartTitle;
             
@@ -336,16 +336,16 @@
             });
         }
 
-        // --- FIM DO BACKEND/DB SIMULADO ---
+        
 
 
-        // --- INÍCIO DO FRONTEND (React Simulado) ---
+        
 
         function updateChart(chartId, data, type = 'bar') {
             const ctx = document.getElementById(chartId).getContext('2d');
             
             if (CHARTS[chartId]) {
-                CHARTS[chartId].destroy(); // Destrói gráfico anterior para evitar bugs
+                CHARTS[chartId].destroy(); 
             }
             
             CHARTS[chartId] = new Chart(ctx, {
@@ -368,12 +368,12 @@
         }
 
         function updateDashboard() {
-            // 1. Atualizar KPIs
+            
             document.getElementById('kpi-total-sales').innerText = ANALYTICS_DATA.kpi_total_sales.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             document.getElementById('kpi-total-orders').innerText = ANALYTICS_DATA.kpi_total_orders.toLocaleString('pt-BR');
             document.getElementById('kpi-risky-customers').innerText = ANALYTICS_DATA.kpi_risky_customers.toLocaleString('pt-BR');
             
-            // 2. Atualizar Gráfico 2 (Performance de Entrega)
+            
             const deliveryData = ANALYTICS_DATA.mart_delivery_performance;
             updateChart('chart2', {
                 labels: deliveryData.map(d => d.region),
@@ -384,20 +384,20 @@
                 }]
             });
 
-            // 3. Rodar a query customizada padrão
+            
             runCustomQuery();
         }
 
-        // --- Inicialização ---
+        
         document.addEventListener('DOMContentLoaded', () => {
-            // Registra os "event listeners"
+            
             document.getElementById('date-range').addEventListener('change', (e) => {
                 fetchData(e.target.value);
             });
             
             document.getElementById('run-query').addEventListener('click', runCustomQuery);
 
-            // Carga Inicial
+            
             fetchData(document.getElementById('date-range').value);
         });
 
