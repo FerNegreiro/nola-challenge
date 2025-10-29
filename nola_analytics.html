@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NOLA Analytics - Dashboard</title>
-    
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/weekday.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/isoWeek.js"></script>
@@ -28,7 +25,6 @@
 </head>
 <body class="bg-gray-100 font-sans">
 
-    
     <header class="bg-white shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold text-gray-900">
@@ -36,7 +32,6 @@
             </h1>
             <div class="flex items-center space-x-4">
                 <span class="text-sm text-gray-700 hidden sm:block">Olá, <span class="font-medium">Maria</span></span>
-                
                 <div>
                     <label for="date-range" class="sr-only">Período</label>
                     <select id="date-range" name="date-range" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
@@ -50,9 +45,7 @@
         </div>
     </header>
 
-    
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        
         
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <div class="bg-white p-6 rounded-lg shadow-sm">
@@ -69,13 +62,11 @@
             </div>
         </div>
 
-        
         <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
             <h2 class="text-lg font-medium text-gray-900 mb-4">Análise Customizada</h2>
             <p class="text-sm text-gray-600 mb-4">Responda suas perguntas. Comece selecionando uma métrica e uma dimensão para explorar.</p>
             
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                
                 <select id="filter-metric" class="rounded-md border-gray-300 shadow-sm">
                     <option value="total_sales">Vendas Totais</option>
                     <option value="total_orders">Total de Pedidos</option>
@@ -89,7 +80,6 @@
                     <option value="hour_of_day">Hora do Dia</option>
                 </select>
 
-                
                 <select id="filter-channel" class="rounded-md border-gray-300 shadow-sm">
                     <option value="all">Todos</option>
                     <option value="iFood">iFood</option>
@@ -104,28 +94,40 @@
             </div>
         </div>
 
-        
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
             <div class="bg-white p-6 rounded-lg shadow-sm">
                 <h3 id="chart1-title" class="text-lg font-medium text-gray-900 mb-4">Sua Análise</h3>
                 <canvas id="chart1"></canvas>
             </div>
 
-            
             <div class="bg-white p-6 rounded-lg shadow-sm">
                 <h3 class="text-lg font-medium text-gray-900 mb-4">Tempo Médio de Entrega (min) por Região</h3>
                 <canvas id="chart2"></canvas>
             </div>
         </div>
 
+        <!-- Nova linha para a tabela de Clientes em Risco, abaixo dos outros gráficos --><div class="grid grid-cols-1 lg:grid-cols-1 gap-6 mt-6"> 
+             <div class="bg-white p-6 rounded-lg shadow-sm">
+                 <h3 id="risky-clients-title" class="text-lg font-medium text-gray-900 mb-4">Clientes em Risco (...)</h3>
+                 <div class="overflow-y-auto h-80">
+                     <table class="min-w-full divide-y divide-gray-200">
+                         <thead class="bg-gray-50 sticky top-0">
+                             <tr>
+                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Última Compra (Dias)</th>
+                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Frequência</th>
+                             </tr>
+                         </thead>
+                         <tbody id="risky-clients-table-body" class="bg-white divide-y divide-gray-200">
+                             <!-- Linhas serão adicionadas via JavaScript --></tbody>
+                     </table>
+                 </div>
+             </div>
+        </div>
+
     </main>
 
     <script>
-        
-        
-        
-
         let RAW_DATA = [];
         let ANALYTICS_DATA = {};
         let CHARTS = {};
@@ -142,21 +144,26 @@
             ],
             channels: ["iFood", "Rappi", "WhatsApp", "Presencial"],
             regions: ["Zona Sul", "Zona Norte", "Centro", "Zona Oeste"],
-            customer_ids: Array.from({ length: 500 }, (_, i) => `customer_${i + 1}`),
+            customer_names: [ 
+                "Ana Silva", "Bruno Costa", "Carla Dias", "Daniel Souza", "Eduarda Lima",
+                "Felipe Santos", "Gabriela Alves", "Hugo Pereira", "Isabela Rocha", "João Fernandes",
+                "Karen Ribeiro", "Lucas Martins", "Mariana Gomes", "Nuno Rodrigues", "Olivia Carvalho",
+                "Pedro Almeida", "Rafaela Mendes", "Sérgio Barros", "Tatiana Nunes", "Ulisses Vieira",
+                "Vera Franco", "Wilson Castro", "Xenia Moraes", "Yara Pires", "Zeca Fernandes",
+                "Amanda Torres", "Ricardo Neves", "Patrícia Brito", "Gustavo Paz", "Larissa Farias"
+            ],
         };
 
-        
         function rand(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        
         function createMockOrder(date) {
-            const customer_id = MOCK_CONFIG.customer_ids[rand(0, 499)];
+            const customer_name = MOCK_CONFIG.customer_names[rand(0, MOCK_CONFIG.customer_names.length - 1)]; 
+            const customer_id = `customer_${customer_name.replace(/\s/g, '_').toLowerCase()}_${rand(100,999)}`; // Gera um ID único baseado no nome
             const channel = MOCK_CONFIG.channels[rand(0, 3)];
             const product = MOCK_CONFIG.products[rand(0, 4)];
             const region = MOCK_CONFIG.regions[rand(0, 3)];
-            
             
             const hour = rand(10, 23);
             const created_at = date.hour(hour).minute(rand(0, 59)).second(rand(0, 59));
@@ -165,7 +172,8 @@
             
             return {
                 order_id: `order_${rand(10000, 99999)}`,
-                customer_id: customer_id,
+                customer_id: customer_id, 
+                customer_name: customer_name, 
                 created_at: created_at.toISOString(),
                 channel: channel,
                 product_id: product.id,
@@ -178,8 +186,6 @@
             };
         }
 
-        
-        
         console.log("Simulando banco de dados... Gerando 5.000 vendas...");
         RAW_DATA = Array.from({ length: 5000 }, () => {
             const randomDayAgo = rand(0, 180);
@@ -189,23 +195,15 @@
         console.log("Banco de dados simulado com", RAW_DATA.length, "registros.");
 
         
-        
-        
-        
-        
         function runETL(data, daysAgo) {
             console.log(`Rodando ETL (simulação dbt) para ${daysAgo} dias...`);
-            
             
             const startDate = TODAY.subtract(daysAgo, 'day').startOf('day');
             const filteredData = data.filter(d => dayjs(d.created_at).isAfter(startDate));
             console.log(`Dados filtrados: ${filteredData.length} registros.`);
 
-            
-            
             const customAnalysisData = filteredData;
 
-            
             const deliveryByRegion = {};
             filteredData.forEach(d => {
                 if (d.delivery_time_min) {
@@ -223,11 +221,14 @@
 
 
             
-            
             const customerData = {};
-            data.forEach(d => {
+            data.forEach(d => { 
                 if (!customerData[d.customer_id]) {
-                    customerData[d.customer_id] = { total_orders: 0, last_order_date: null };
+                    customerData[d.customer_id] = { 
+                        total_orders: 0, 
+                        last_order_date: null,
+                        customer_name: d.customer_name // Adiciona o nome do cliente aqui
+                    };
                 }
                 customerData[d.customer_id].total_orders++;
                 const orderDate = dayjs(d.created_at);
@@ -236,18 +237,21 @@
                 }
             });
 
-            let riskyCustomersCount = 0;
+            let riskyCustomersList = []; 
             Object.keys(customerData).forEach(customerId => {
                 const customer = customerData[customerId];
                 const days_since_last_order = TODAY.diff(customer.last_order_date, 'day');
                 
-                
                 if (customer.total_orders >= 3 && days_since_last_order > 30) {
-                    riskyCustomersCount++;
+                    riskyCustomersList.push({ 
+                       customer_id: customerId,
+                       customer_name: customer.customer_name, // Adiciona o nome real aqui
+                       dias_desde_ultima_compra: days_since_last_order,
+                       frequencia: customer.total_orders
+                    });
                 }
             });
 
-            
             const kpi_total_sales = filteredData.reduce((sum, d) => sum + d.total_sales, 0);
             const kpi_total_orders = filteredData.length;
 
@@ -256,21 +260,16 @@
                 mart_delivery_performance,
                 kpi_total_sales,
                 kpi_total_orders,
-                kpi_risky_customers: riskyCustomersCount,
+                kpi_risky_customers: riskyCustomersList.length, 
+                mart_risky_customers: riskyCustomersList 
             };
         }
 
-
-        
-        
-
-        
         function fetchData(daysAgo) {
             ANALYTICS_DATA = runETL(RAW_DATA, daysAgo);
             updateDashboard();
         }
 
-        
         function runCustomQuery() {
             const metric = document.getElementById('filter-metric').value;
             const dimension = document.getElementById('filter-dimension').value;
@@ -278,23 +277,16 @@
 
             console.log(`Rodando query customizada: ${metric} por ${dimension}, filtro: ${channelFilter}`);
 
-            
             let data = ANALYTICS_DATA.customAnalysisData;
             if (channelFilter !== 'all') {
                 data = data.filter(d => d.channel === channelFilter);
             }
             
-            
-            
-            
-            
             if (channelFilter === 'iFood' && dimension === 'product_name') {
-                 
                  data = data.filter(d => d.day_of_week === 4 && d.hour_of_day >= 19);
                  console.log("Aplicando filtro especial 'Quinta à noite no iFood'");
             }
 
-            
             const aggregation = {};
             data.forEach(d => {
                 const dimValue = d[dimension];
@@ -305,13 +297,11 @@
                 aggregation[dimValue].total_orders++;
             });
 
-            
             const sortedData = Object.keys(aggregation).map(dimValue => ({
                 dimension: dimValue,
                 metric_value: aggregation[dimValue][metric],
             })).sort((a, b) => b.metric_value - a.metric_value).slice(0, 10); 
 
-            
             const dayMap = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
             if (dimension === 'day_of_week') {
                 sortedData.forEach(d => d.dimension = dayMap[d.dimension] || "N/A");
@@ -320,7 +310,6 @@
                 sortedData.forEach(d => d.dimension = `${d.dimension}h`);
             }
 
-            
             const chartTitle = `${document.getElementById('filter-metric').options[document.getElementById('filter-metric').selectedIndex].text} por ${document.getElementById('filter-dimension').options[document.getElementById('filter-dimension').selectedIndex].text}`;
             document.getElementById('chart1-title').innerText = chartTitle;
             
@@ -336,13 +325,12 @@
             });
         }
 
-        
-
-
-        
-
         function updateChart(chartId, data, type = 'bar') {
-            const ctx = document.getElementById(chartId).getContext('2d');
+            const ctx = document.getElementById(chartId)?.getContext('2d');
+             if (!ctx) {
+                console.error(`Canvas com ID '${chartId}' não encontrado.`);
+                return; 
+            }
             
             if (CHARTS[chartId]) {
                 CHARTS[chartId].destroy(); 
@@ -368,12 +356,31 @@
         }
 
         function updateDashboard() {
-            
             document.getElementById('kpi-total-sales').innerText = ANALYTICS_DATA.kpi_total_sales.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             document.getElementById('kpi-total-orders').innerText = ANALYTICS_DATA.kpi_total_orders.toLocaleString('pt-BR');
             document.getElementById('kpi-risky-customers').innerText = ANALYTICS_DATA.kpi_risky_customers.toLocaleString('pt-BR');
             
             
+            const tableBody = document.getElementById('risky-clients-table-body');
+            const titleElement = document.getElementById('risky-clients-title');
+            
+            if (tableBody && titleElement) {
+                 titleElement.innerText = `Clientes em Risco (${ANALYTICS_DATA.mart_risky_customers.length})`; 
+                 tableBody.innerHTML = ''; 
+                 ANALYTICS_DATA.mart_risky_customers.forEach(client => {
+                     const row = tableBody.insertRow();
+                     row.className = 'hover:bg-gray-50'; 
+                     row.innerHTML = `
+                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${client.customer_name}</td>
+                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${client.dias_desde_ultima_compra}</td>
+                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${client.frequencia}</td>
+                     `;
+                 });
+            } else {
+                 console.error("Elemento da tabela de clientes em risco não encontrado.");
+            }
+
+            // --- Atualizar Gráfico 2 (Performance de Entrega) ---
             const deliveryData = ANALYTICS_DATA.mart_delivery_performance;
             updateChart('chart2', {
                 labels: deliveryData.map(d => d.region),
@@ -384,23 +391,20 @@
                 }]
             });
 
-            
             runCustomQuery();
         }
 
-        
         document.addEventListener('DOMContentLoaded', () => {
-            
             document.getElementById('date-range').addEventListener('change', (e) => {
                 fetchData(e.target.value);
             });
             
             document.getElementById('run-query').addEventListener('click', runCustomQuery);
 
-            
             fetchData(document.getElementById('date-range').value);
         });
 
     </script>
 </body>
 </html>
+
