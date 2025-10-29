@@ -183,9 +183,11 @@ function App() {
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
-              <label htmlFor="metric" className="block text-sm font-medium text-gray-700 mb-1">Métrica</label>
+              {/* Etiqueta removida para um design mais limpo */}
               <select
                 id="metric"
+                name="metric"
+                aria-label="Seleção de Métrica"
                 className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
                 value={metric}
                 onChange={(e) => setMetric(e.target.value)}
@@ -196,9 +198,11 @@ function App() {
             </div>
             
             <div>
-              <label htmlFor="dimension" className="block text-sm font-medium text-gray-700 mb-1">Dimensão</label>
+              {/* Etiqueta removida para um design mais limpo */}
               <select
                 id="dimension"
+                name="dimension"
+                aria-label="Seleção de Dimensão"
                 className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
                 value={dimension}
                 onChange={(e) => setDimension(e.target.value)}
@@ -211,9 +215,11 @@ function App() {
             </div>
 
             <div>
-              <label htmlFor="channel" className="block text-sm font-medium text-gray-700 mb-1">Canal</label>
+              {/* Etiqueta removida para um design mais limpo */}
               <select
                 id="channel"
+                name="channel"
+                aria-label="Seleção de Canal"
                 className="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-2.5"
                 value={channel}
                 onChange={(e) => setChannel(e.target.value)}
